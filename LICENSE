@@ -1,9 +1,4 @@
-# Navigate to your repository root
-cd flood-idf-tool
-
-# Create the LICENSE file
-cat > LICENSE <<EOF
-MIT License
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Copyright (c) $(date +%Y) Zedick Otokpa
 
