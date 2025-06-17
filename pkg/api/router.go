@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Zedick Otokpa
+// Licensed under the MIT License. See LICENSE in the project root for license information.
 package api
 
 import (
