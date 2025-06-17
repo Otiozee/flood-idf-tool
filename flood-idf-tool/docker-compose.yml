@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  idf-tool:
+    image: otiozee/flood-idf-tool:latest
+    build: .
+    ports:
+      - "8080:8080"  # API Port
+      - "3000:3000"  # Dashboard Port
+    environment:
+      - NASA_API_KEY=${NASA_API_KEY}
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - idf-net
+
+  # PostgreSQL for data persistence
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: idf_data
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - idf-net
+
+networks:
+  idf-net:
+
+volumes:
+  pgdata:

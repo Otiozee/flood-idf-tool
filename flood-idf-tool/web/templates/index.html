@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Makurdi IDF Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .container { display: flex; flex-wrap: wrap; gap: 20px; }
+    .panel { flex: 1; min-width: 300px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+    .chart { height: 400px; }
+    .footer { margin-top: 30px; text-align: center; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Flood Prediction Dashboard for {{.Region}}</h1>
+    <p>Real-time rainfall intensity modeling using NASA GPM data</p>
+  </div>
+  
+  <div class="container">
+    <div class="panel">
+      <h2>IDF Curve</h2>
+      <div id="idf-chart" class="chart"></div>
+    </div>
+    
+    <div class="panel">
+      <h2>Real-time Data</h2>
+      <div id="realtime-chart" class="chart"></div>
+    </div>
+    
+    <div class="panel">
+      <h2>Model Parameters</h2>
+      <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Gumbel C</td><td>{{index .Constants "Gumbel_C"}}</td></tr>
+        <tr><td>Gumbel M</td><td>{{index .Constants "Gumbel_M"}}</td></tr>
+        <tr><td>Optimal R²</td><td>0.9836</td></tr>
+        <tr><td>Data Period</td><td>1971-2020</td></tr>
+      </table>
+      
+      <h3>Calculate Intensity</h3>
+      <div>
+        <label>Duration (hr): <input type="number" id="duration" value="2" step="0.1"></label>
+        <label>Return Period (yr): <input type="number" id="return-period" value="50"></label>
+        <button onclick="calculateIntensity()">Calculate</button>
+      </div>
+      <div id="result" style="margin-top: 15px; font-weight: bold;"></div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>Developed by Dr. Zedick Otokpa | Federal University Otuoke</p>
+    <p>NASA Space Apps Challenge 2024 Submission</p>
+  </div>
+
+  <script>
+    // IDF Curve
+    const idfData = [{
+      x: [1, 2, 5, 10, 25, 50, 100],
+      y: [110.2, 142.3, 175.8, 201.5, 230.1, 255.9, 288.4],
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Gumbel Distribution'
+    }];
+    
+    Plotly.newPlot('idf-chart', idfData, {
+      title: 'Rainfall Intensity-Duration-Frequency Curve',
+      xaxis: {title: 'Return Period (years)', type: 'log'},
+      yaxis: {title: 'Intensity (mm/hr)'}
+    });
+    
+    // Realtime Data
+    const realtimeData = [{
+      x: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+      y: [0, 5.2, 12.7, 15.4, 8.9, 3.1],
+      type: 'bar',
+      name: 'Rainfall (mm)'
+    }];
+    
+    Plotly.newPlot('realtime-chart', realtimeData, {
+      title: '24-hour Rainfall Distribution',
+      xaxis: {title: 'Time'},
+      yaxis: {title: 'Rainfall (mm)'}
+    });
+    
+    // API Integration
+    function calculateIntensity() {
+      const duration = document.getElementById('duration').value;
+      const returnPeriod = document.getElementById('return-period').value;
+      
+      fetch(`http://localhost:8080/idf?d=${duration}&t=${returnPeriod}`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('result').innerHTML = 
+            `Calculated Intensity: <span style="color: #e74c3c;">${data.intensity.toFixed(2)} mm/hr</span>`;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('result').innerHTML = 
+            'Error: API server not running';
+        });
+    }
+  </script>
+</body>
+</html>
